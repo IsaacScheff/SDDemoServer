@@ -3,8 +3,6 @@ const http = require('http').createServer(server);
 const cors = require('cors');
 
 let players = {};
-//let playerA = {};
-//let playerB = {};
 let selected = 0;
 let playersReady = 0;
 
