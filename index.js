@@ -1,10 +1,13 @@
 const server = require("express");
 const http = require('http').createServer(server);
-const cors = require('cors');
+//const cors = require('cors');
 
 let players = {};
-let selected = 0;
+//let characterSelected = 0;
 let playersReady = 0;
+let selectionsReceived = 0;
+let playerAMove = '';
+let playerBMove = '';
 
 const io = require('socket.io')(http, {
     cors: {
@@ -29,8 +32,12 @@ io.on('connection', function(socket){
     socket.on('playerReady', function () {
         console.log("someone's ready");
         playersReady++;
-        if(playersReady == 2){
+        if(playersReady === 1){
+            io.to(socket.id).emit('yourePlayerA');
+            console.log('attempted emit to ' + socket.id);
+        }else if(playersReady === 2){
             console.log('Received two readies!');
+            io.to(socket.id).emit('yourePlayerB');
             io.emit("selectScreen");
         }
     });
@@ -43,14 +50,30 @@ io.on('connection', function(socket){
     socket.on('characterSelect', function (character) {
         players[socket.id].character = character;
         console.log(players);
-        selected++;
-        console.log(selected);
+        //characterSelected++;
+        //console.log(characterSelected);
         io.emit("oppoCharacter", character, socket.id);
     });
 
-    if(selected == 2){
-        //emit player A selection to player B and vice versa
-    }
+    socket.on('moveSelection', function (type, move) {
+        if(players[socket.id].isPlayerA === true){
+            playerAMove = type + ',' + move;
+            console.log(playerAMove);
+        }else{
+            playerBMove = type + ',' + move;
+            console.log(playerBMove);
+        }
+
+        selectionsReceived++;
+        if(selectionsReceived == 2){
+            //emit player A selection to player B and vice versa
+            selectionsReceived = 0;
+            playerAMove = '';
+            playerBMove = '';
+            //io.emit('playerAMove', playerAMove);
+            //io.emit('playerBMove', playerBMove);
+        }
+    });
 });
 
 http.listen(3000, () => {
