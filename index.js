@@ -22,7 +22,7 @@ io.on('connection', function(socket){
     players[socket.id] = {
         isPlayerA: false,
         character: null,
-        ready: null
+        //ready: null
     };
 
     if (Object.keys(players).length < 2) {
@@ -50,28 +50,26 @@ io.on('connection', function(socket){
     socket.on('characterSelect', function (character) {
         players[socket.id].character = character;
         console.log(players);
-        //characterSelected++;
-        //console.log(characterSelected);
         io.emit("oppoCharacter", character, socket.id);
     });
 
     socket.on('moveSelection', function (type, move) {
+        console.log(players[socket.id]);
         if(players[socket.id].isPlayerA === true){
             playerAMove = type + ',' + move;
-            console.log(playerAMove);
+            console.log('playerAMove: ', playerAMove);
         }else{
             playerBMove = type + ',' + move;
-            console.log(playerBMove);
+            console.log('playerBMove ', playerBMove);
         }
 
         selectionsReceived++;
         if(selectionsReceived == 2){
-            //emit player A selection to player B and vice versa
             selectionsReceived = 0;
+            console.log('A: ', playerAMove, ' B: ', playerBMove);
+            io.emit('playerMoves', playerAMove, playerBMove);
             playerAMove = '';
             playerBMove = '';
-            //io.emit('playerAMove', playerAMove);
-            //io.emit('playerBMove', playerBMove);
         }
     });
 });
