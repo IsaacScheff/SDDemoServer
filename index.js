@@ -21,23 +21,19 @@ io.on('connection', function(socket){
 
     players[socket.id] = {
         isPlayerA: false,
-        character: null,
-        //ready: null
+        character: null
     };
 
     if (Object.keys(players).length < 2) {
         players[socket.id].isPlayerA = true;
+        io.emit('yourePlayerA');
     }
 
     socket.on('playerReady', function () {
         console.log("someone's ready");
         playersReady++;
-        if(playersReady === 1){
-            io.to(socket.id).emit('yourePlayerA');
-            console.log('attempted emit to ' + socket.id);
-        }else if(playersReady === 2){
+        if(playersReady === 2){
             console.log('Received two readies!');
-            io.to(socket.id).emit('yourePlayerB');
             io.emit("selectScreen");
         }
     });
@@ -67,7 +63,7 @@ io.on('connection', function(socket){
         if(selectionsReceived == 2){
             selectionsReceived = 0;
             console.log('A: ', playerAMove, ' B: ', playerBMove);
-            io.emit('playerMoves', playerAMove, playerBMove);
+            io.emit('playerMoves', playerAMove.concat(',', playerBMove));
             playerAMove = '';
             playerBMove = '';
         }
